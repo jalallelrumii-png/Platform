@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LF ADMIN PANEL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-slate-900 text-white p-5">
+    <div id="app" class="max-w-xl mx-auto">
+        <header class="mb-10 flex justify-between items-center">
+            <h1 class="text-xl font-black italic">LF <span class="text-red-500">ADMIN</span></h1>
+            <button @click="saveToGithub" class="bg-green-600 px-4 py-2 rounded-xl text-xs font-bold uppercase shadow-lg shadow-green-900/20">Simpan Perubahan</button>
+        </header>
+
+        <div class="mb-8 p-4 bg-slate-800 rounded-2xl border border-slate-700">
+            <p class="text-[10px] text-slate-400 uppercase font-black mb-2">GitHub Token & Repo</p>
+            <input v-model="config.token" type="password" placeholder="Paste GitHub Token Lu" class="w-full bg-slate-900 p-3 rounded-xl text-xs mb-2 outline-none border border-slate-700 focus:border-red-500">
+            <input v-model="config.repo" type="text" placeholder="username/repo (Contoh: jalallelrumii-png/Si-Pintar)" class="w-full bg-slate-900 p-3 rounded-xl text-xs outline-none border border-slate-700">
+        </div>
+
+        <div class="space-y-4">
+            <div v-for="(p, index) in products" :key="index" class="p-5 bg-slate-800 rounded-[24px] border border-slate-700">
+                <div class="flex gap-4 mb-4">
+                    <img :src="p.image" class="w-16 h-16 rounded-xl object-cover bg-slate-900">
+                    <div class="flex-1">
+                        <input v-model="p.name" class="bg-transparent text-sm font-bold w-full outline-none focus:text-red-400">
+                        <input v-model="p.price" class="bg-transparent text-xs text-slate-400 w-full outline-none">
+                    </div>
+                    <button @click="remove(index)" class="text-red-500 font-bold">✕</button>
+                </div>
+                <textarea v-model="p.desc" class="w-full bg-slate-900 p-3 rounded-xl text-[11px] h-20 outline-none border border-slate-700"></textarea>
+                <input v-model="p.image" placeholder="URL Foto" class="w-full bg-slate-900 p-2 rounded-lg text-[9px] mt-2 border border-slate-700">
+            </div>
+        </div>
+
+        <button @click="addNew" class="w-full mt-6 border-2 border-dashed border-slate-700 py-4 rounded-2xl text-slate-500 font-bold text-xs uppercase hover:border-red-500 hover:text-red-500">+ Tambah Produk Baru</button>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+        createApp({
+            data() {
+                return {
+                    config: { token: localStorage.getItem('lf-token') || '', repo: localStorage.getItem('lf-repo') || '' },
+                    products: [],
+                    sha: '' // Dibutuhkan GitHub buat update file
+                }
+            },
+            methods: {
+                async loadData() {
+                    const res = await fetch(`https://api.github.com/repos/${this.config.repo}/contents/data.json`);
+                    const data = await res.json();
+                    this.sha = data.sha;
+                    this.products = JSON.parse(atob(data.content));
+                },
+                addNew() {
+                    this.products.push({ id: Date.now(), name: "Nama Produk", price: "0", image: "", cat: "Aplikasi", desc: "" });
+                },
+                remove(i) { this.products.splice(i, 1); },
+                async saveToGithub() {
+                    localStorage.setItem('lf-token', this.config.token);
+                    localStorage.setItem('lf-repo', this.config.repo);
+                    
+                    const content = btoa(JSON.stringify(this.products, null, 2));
+                    const res = await fetch(`https://api.github.com/repos/${this.config.repo}/contents/data.json`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `token ${this.config.token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: "Update data jualan via LF Admin", content, sha: this.sha })
+                    });
+
+                    if(res.ok) { alert("Berhasil Update, Bos!"); location.reload(); }
+                    else { alert("Gagal! Cek Token atau Repo Lu!"); }
+                }
+            },
+            mounted() { if(this.config.repo) this.loadData(); }
+        }).mount('#app')
+    </script>
+</body>
+</html>
