@@ -3,61 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LF STORE ULTIMATE</title>
+    <title>LF DIGITAL STORE</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ef4444">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; -webkit-tap-highlight-color: transparent; }
-        .card-pro { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 28px; transition: 0.3s active; }
-        .card-pro:active { transform: scale(0.95); background: #111; }
-        .btn-install { background: linear-gradient(45deg, #ef4444, #991b1b); }
-        /* Animasi biar kayak apps mahal */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.5s ease-out; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; }
+        .product-card { background: white; border-radius: 24px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid #f1f5f9; }
+        .product-card:active { transform: scale(0.96); background: #fdfdfd; }
+        .tab-active { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        .detail-modal { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-6 pb-24">
+<body class="p-5 pb-20">
 
-<div id="app" class="max-w-md mx-auto">
-    <div v-if="installPrompt" class="mb-6 fade-in p-5 bg-white text-black rounded-[24px] flex justify-between items-center shadow-2xl">
-        <div class="pr-4">
-            <p class="text-[10px] font-black uppercase tracking-widest opacity-50">App Available</p>
-            <p class="text-xs font-bold">Pasang LF Store di Layar Utama?</p>
-        </div>
-        <button @click="installApp" class="bg-black text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase">Install</button>
-    </div>
-
-    <header class="mb-10 flex justify-between items-end">
+<div id="app">
+    <header class="mb-8 flex justify-between items-center bg-white p-5 rounded-[30px] shadow-sm border border-slate-100">
         <div>
-            <h1 class="text-3xl font-black italic tracking-tighter">LF <span class="text-red-600">STORE</span></h1>
-            <p class="text-[9px] opacity-30 font-bold uppercase tracking-[0.4em]">Integrated Platform</p>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase">LF <span class="text-red-600">STORE</span></h1>
+            <p class="text-[9px] font-bold opacity-40 uppercase tracking-widest text-slate-500">Integrated Platform</p>
         </div>
-        <div class="flex items-center gap-2">
-            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="text-[9px] font-bold opacity-50 uppercase">Online</span>
+        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span class="text-[9px] font-black text-slate-500 uppercase">Online</span>
         </div>
     </header>
 
-    <div class="flex gap-2 mb-8 overflow-x-auto no-scrollbar">
-        <button v-for="c in categories" @click="tab = c" 
-                :class="['px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all', tab === c ? 'bg-red-600 border-red-600 text-white' : 'bg-[#0a0a0a] border-[#222] opacity-40']">
-            {{ c }}
+    <div class="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">
+        <button v-for="cat in categories" :key="cat" @click="activeTab = cat" 
+                :class="['px-6 py-2.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest whitespace-nowrap bg-white text-slate-400 border border-slate-100 transition-all', activeTab === cat ? 'tab-active shadow-lg shadow-red-100' : '']">
+            {{ cat }}
         </button>
     </div>
 
-    <main class="grid gap-4">
-        <div v-for="p in filteredItems" :key="p.id" class="card-pro p-5 flex items-center gap-4 fade-in">
-            <div class="text-3xl">{{ p.icon }}</div>
-            <div class="flex-1">
-                <h3 class="text-xs font-black uppercase tracking-tight">{{ p.name }}</h3>
-                <p class="text-[10px] text-red-500 font-bold mt-1">Rp{{ p.price }}</p>
+    <div class="grid gap-5">
+        <div v-for="item in filteredProducts" :key="item.id" @click="openDetail(item)"
+             class="product-card p-5 flex items-center gap-5 shadow-sm">
+            <div class="relative w-20 h-20 shrink-0">
+                <img :src="item.image" class="w-full h-full rounded-2xl object-cover bg-slate-100 shadow-inner">
+                <div v-if="item.isHot" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-lg italic shadow-lg">HOT</div>
             </div>
-            <button @click="checkout(p)" class="bg-white text-black text-[9px] font-black px-4 py-2 rounded-xl uppercase">Beli</button>
+            <div class="flex-1 min-w-0">
+                <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">{{ item.cat }}</p>
+                <h3 class="text-sm font-extrabold text-slate-800 leading-tight truncate">{{ item.name }}</h3>
+                <div class="flex items-center gap-2 mt-3">
+                    <span class="text-sm font-black text-slate-900">Rp{{ item.price }}</span>
+                    <span v-if="item.oldPrice" class="text-[10px] text-slate-300 font-bold line-through">Rp{{ item.oldPrice }}</span>
+                </div>
+            </div>
+            <div class="text-slate-200">➔</div>
         </div>
-    </main>
+    </div>
+
+    <div v-if="selectedItem" class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm px-4 pb-6" @click.self="selectedItem = null">
+        <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl detail-modal">
+            <div class="relative h-64">
+                <img :src="selectedItem.image" class="w-full h-full object-cover">
+                <button @click="selectedItem = null" class="absolute top-6 left-6 bg-black/20 backdrop-blur-md p-3 rounded-2xl text-white">✕</button>
+            </div>
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="bg-red-50 text-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">{{ selectedItem.cat }}</span>
+                        <h2 class="text-2xl font-black tracking-tight text-slate-900 mt-3">{{ selectedItem.name }}</h2>
+                    </div>
+                    <p class="text-xl font-black text-red-600">Rp{{ selectedItem.price }}</p>
+                </div>
+                <p class="text-sm text-slate-500 leading-relaxed font-semibold mt-4">{{ selectedItem.desc }}</p>
+                <button @click="orderNow(selectedItem)" class="w-full mt-10 bg-red-600 text-white py-5 rounded-[24px] text-xs font-black uppercase tracking-widest shadow-xl shadow-red-200 active:scale-95 transition-all">
+                    Beli via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -65,40 +87,25 @@
     createApp({
         data() {
             return {
-                tab: 'Semua',
-                categories: ['Semua', 'Aplikasi', 'Akun', 'Premium'],
-                installPrompt: null,
-                items: [
-                    { id: 1, name: 'LF Stream Pro', price: '49.000', icon: '🎬', cat: 'Aplikasi' },
-                    { id: 2, name: 'LF Audio Engine', price: '29.000', icon: '🔊', cat: 'Aplikasi' },
-                    { id: 3, name: 'Netflix UHD 4K', price: '35.000', icon: '🍿', cat: 'Akun' },
-                    { id: 4, name: 'YouTube Premium', price: '10.000', icon: '🔴', cat: 'Premium' }
+                activeTab: 'Semua',
+                selectedItem: null,
+                categories: ['Semua', 'Aplikasi', 'Akun', 'Premium', 'Jasa'],
+                products: [
+                    { id: 1, name: 'LF Stream Pro', price: '49.000', oldPrice: '99.000', image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500', cat: 'Aplikasi', isHot: true, desc: 'Akses ribuan video cinematic premium lewat cloud server.' },
+                    { id: 2, name: 'Netflix UHD 4K', price: '35.000', image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=500', cat: 'Akun', isHot: false, desc: 'Akun privat legal durasi 30 hari.' }
                 ]
             }
         },
         computed: {
-            filteredItems() { return this.tab === 'Semua' ? this.items : this.items.filter(i => i.cat === this.tab) }
+            filteredProducts() { return this.activeTab === 'Semua' ? this.products : this.products.filter(p => p.cat === this.activeTab) }
         },
-        mounted() {
-            // Register Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js');
-            }
-            // Logic Install PWA
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                this.installPrompt = e;
-            });
-        },
+        mounted() { if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); } },
         methods: {
-            async installApp() {
-                if (!this.installPrompt) return;
-                this.installPrompt.prompt();
-                const { outcome } = await this.installPrompt.userChoice;
-                if (outcome === 'accepted') this.installPrompt = null;
-            },
-            checkout(p) {
-                window.open(`https://wa.me/628123456789?text=Halo+LF+Store,+saya+order+${p.name}`, '_blank');
+            openDetail(item) { this.selectedItem = item; },
+            orderNow(item) {
+                const phone = "628123456789"; // GANTI NOMOR LU!
+                const text = encodeURIComponent(`Halo LF Store, saya mau beli *${item.name}* seharga *Rp${item.price}*`);
+                window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
             }
         }
     }).mount('#app')
