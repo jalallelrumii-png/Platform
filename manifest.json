@@ -1,0 +1,17 @@
+{
+  "name": "LF STORE PLATFORM",
+  "short_name": "LF-STORE",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ef4444",
+  "description": "Premium Digital Store Ecosystem",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3043/3043665.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LF STORE ULTIMATE</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ef4444">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: #fff; -webkit-tap-highlight-color: transparent; }
+        .card-pro { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 28px; transition: 0.3s active; }
+        .card-pro:active { transform: scale(0.95); background: #111; }
+        .btn-install { background: linear-gradient(45deg, #ef4444, #991b1b); }
+        /* Animasi biar kayak apps mahal */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+    </style>
+</head>
+<body class="p-6 pb-24">
+
+<div id="app" class="max-w-md mx-auto">
+    <div v-if="installPrompt" class="mb-6 fade-in p-5 bg-white text-black rounded-[24px] flex justify-between items-center shadow-2xl">
+        <div class="pr-4">
+            <p class="text-[10px] font-black uppercase tracking-widest opacity-50">App Available</p>
+            <p class="text-xs font-bold">Pasang LF Store di Layar Utama?</p>
+        </div>
+        <button @click="installApp" class="bg-black text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase">Install</button>
+    </div>
+
+    <header class="mb-10 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter">LF <span class="text-red-600">STORE</span></h1>
+            <p class="text-[9px] opacity-30 font-bold uppercase tracking-[0.4em]">Integrated Platform</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-[9px] font-bold opacity-50 uppercase">Online</span>
+        </div>
+    </header>
+
+    <div class="flex gap-2 mb-8 overflow-x-auto no-scrollbar">
+        <button v-for="c in categories" @click="tab = c" 
+                :class="['px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all', tab === c ? 'bg-red-600 border-red-600 text-white' : 'bg-[#0a0a0a] border-[#222] opacity-40']">
+            {{ c }}
+        </button>
+    </div>
+
+    <main class="grid gap-4">
+        <div v-for="p in filteredItems" :key="p.id" class="card-pro p-5 flex items-center gap-4 fade-in">
+            <div class="text-3xl">{{ p.icon }}</div>
+            <div class="flex-1">
+                <h3 class="text-xs font-black uppercase tracking-tight">{{ p.name }}</h3>
+                <p class="text-[10px] text-red-500 font-bold mt-1">Rp{{ p.price }}</p>
+            </div>
+            <button @click="checkout(p)" class="bg-white text-black text-[9px] font-black px-4 py-2 rounded-xl uppercase">Beli</button>
+        </div>
+    </main>
+</div>
+
+<script>
+    const { createApp } = Vue
+    createApp({
+        data() {
+            return {
+                tab: 'Semua',
+                categories: ['Semua', 'Aplikasi', 'Akun', 'Premium'],
+                installPrompt: null,
+                items: [
+                    { id: 1, name: 'LF Stream Pro', price: '49.000', icon: '🎬', cat: 'Aplikasi' },
+                    { id: 2, name: 'LF Audio Engine', price: '29.000', icon: '🔊', cat: 'Aplikasi' },
+                    { id: 3, name: 'Netflix UHD 4K', price: '35.000', icon: '🍿', cat: 'Akun' },
+                    { id: 4, name: 'YouTube Premium', price: '10.000', icon: '🔴', cat: 'Premium' }
+                ]
+            }
+        },
+        computed: {
+            filteredItems() { return this.tab === 'Semua' ? this.items : this.items.filter(i => i.cat === this.tab) }
+        },
+        mounted() {
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js');
+            }
+            // Logic Install PWA
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                this.installPrompt = e;
+            });
+        },
+        methods: {
+            async installApp() {
+                if (!this.installPrompt) return;
+                this.installPrompt.prompt();
+                const { outcome } = await this.installPrompt.userChoice;
+                if (outcome === 'accepted') this.installPrompt = null;
+            },
+            checkout(p) {
+                window.open(`https://wa.me/628123456789?text=Halo+LF+Store,+saya+order+${p.name}`, '_blank');
+            }
+        }
+    }).mount('#app')
+</script>
+</body>
+</html>
