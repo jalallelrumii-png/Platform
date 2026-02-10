@@ -1,16 +1,16 @@
 {
-  "name": "LF STORE ECOSYSTEM",
+  "name": "LF STORE MOBILE",
   "short_name": "LF-STORE",
   "start_url": "index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f8fafc",
-  "theme_color": "#ef4444",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3043/3043665.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
