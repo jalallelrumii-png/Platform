@@ -2,83 +2,101 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LF DIGITAL STORE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LF STORE</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ef4444">
+    <meta name="theme-color" content="#ffffff">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; }
-        .product-card { background: white; border-radius: 24px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid #f1f5f9; }
-        .product-card:active { transform: scale(0.96); background: #fdfdfd; }
-        .tab-active { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
-        .detail-modal { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        .app-text-xs { font-size: 0.65rem; } /* Teks super kecil ala android */
+        .app-text-sm { font-size: 0.8rem; }
+        
+        /* Navigasi Halaman Full */
+        .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 10; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
+        .page-enter { transform: translateX(100%); }
+        .page-active { transform: translateX(0); }
+
+        .product-item { background: white; border-radius: 16px; border: 1px solid #f1f5f9; transition: 0.2s; }
+        .product-item:active { background: #f1f5f9; transform: scale(0.98); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-5 pb-20">
+<body>
 
 <div id="app">
-    <header class="mb-8 flex justify-between items-center bg-white p-5 rounded-[30px] shadow-sm border border-slate-100">
-        <div>
-            <h1 class="text-xl font-black italic tracking-tighter uppercase">LF <span class="text-red-600">STORE</span></h1>
-            <p class="text-[9px] font-bold opacity-40 uppercase tracking-widest text-slate-500">Integrated Platform</p>
-        </div>
-        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span class="text-[9px] font-black text-slate-500 uppercase">Online</span>
-        </div>
-    </header>
-
-    <div class="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">
-        <button v-for="cat in categories" :key="cat" @click="activeTab = cat" 
-                :class="['px-6 py-2.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest whitespace-nowrap bg-white text-slate-400 border border-slate-100 transition-all', activeTab === cat ? 'tab-active shadow-lg shadow-red-100' : '']">
-            {{ cat }}
-        </button>
-    </div>
-
-    <div class="grid gap-5">
-        <div v-for="item in filteredProducts" :key="item.id" @click="openDetail(item)"
-             class="product-card p-5 flex items-center gap-5 shadow-sm">
-            <div class="relative w-20 h-20 shrink-0">
-                <img :src="item.image" class="w-full h-full rounded-2xl object-cover bg-slate-100 shadow-inner">
-                <div v-if="item.isHot" class="absolute -top-2 -right-2 bg-red-600 text-white text-[8px] font-black px-2 py-1 rounded-lg italic shadow-lg">HOT</div>
+    <div class="p-4 pb-20">
+        <header class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-lg font-black italic tracking-tighter uppercase leading-none">LF <span class="text-red-600">STORE</span></h1>
+                <p class="app-text-xs font-bold opacity-40 uppercase tracking-widest">v2.0 Native Feel</p>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-1">{{ item.cat }}</p>
-                <h3 class="text-sm font-extrabold text-slate-800 leading-tight truncate">{{ item.name }}</h3>
-                <div class="flex items-center gap-2 mt-3">
-                    <span class="text-sm font-black text-slate-900">Rp{{ item.price }}</span>
-                    <span v-if="item.oldPrice" class="text-[10px] text-slate-300 font-bold line-through">Rp{{ item.oldPrice }}</span>
-                </div>
+            <div class="bg-white border border-slate-100 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="app-text-xs font-black text-slate-500 uppercase">Online</span>
             </div>
-            <div class="text-slate-200">➔</div>
-        </div>
-    </div>
+        </header>
 
-    <div v-if="selectedItem" class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm px-4 pb-6" @click.self="selectedItem = null">
-        <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl detail-modal">
-            <div class="relative h-64">
-                <img :src="selectedItem.image" class="w-full h-full object-cover">
-                <button @click="selectedItem = null" class="absolute top-6 left-6 bg-black/20 backdrop-blur-md p-3 rounded-2xl text-white">✕</button>
-            </div>
-            <div class="p-8">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span class="bg-red-50 text-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">{{ selectedItem.cat }}</span>
-                        <h2 class="text-2xl font-black tracking-tight text-slate-900 mt-3">{{ selectedItem.name }}</h2>
+        <div class="flex gap-1.5 mb-6 overflow-x-auto no-scrollbar pb-1">
+            <button v-for="c in categories" :key="c" @click="activeTab = c" 
+                :class="['px-4 py-2 rounded-xl app-text-xs font-extrabold uppercase tracking-tighter border transition-all whitespace-nowrap', 
+                activeTab === c ? 'bg-red-600 border-red-600 text-white shadow-md' : 'bg-white text-slate-400 border-slate-100']">
+                {{ c }}
+            </button>
+        </div>
+
+        <div class="grid gap-3">
+            <div v-for="item in filteredProducts" :key="item.id" @click="goToDetail(item)"
+                 class="product-item p-3 flex items-center gap-3">
+                <img :src="item.image" class="w-14 h-14 rounded-xl object-cover bg-slate-100">
+                <div class="flex-1 min-w-0">
+                    <p class="app-text-xs font-black text-red-500 uppercase tracking-tighter mb-0.5">{{ item.cat }}</p>
+                    <h3 class="app-text-sm font-bold text-slate-800 leading-tight truncate">{{ item.name }}</h3>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="app-text-sm font-black text-slate-900">Rp{{ item.price }}</span>
                     </div>
-                    <p class="text-xl font-black text-red-600">Rp{{ selectedItem.price }}</p>
                 </div>
-                <p class="text-sm text-slate-500 leading-relaxed font-semibold mt-4">{{ selectedItem.desc }}</p>
-                <button @click="orderNow(selectedItem)" class="w-full mt-10 bg-red-600 text-white py-5 rounded-[24px] text-xs font-black uppercase tracking-widest shadow-xl shadow-red-200 active:scale-95 transition-all">
-                    Beli via WhatsApp
+                <div class="text-slate-300 text-lg">›</div>
+            </div>
+        </div>
+    </div>
+
+    <div :class="['page', viewDetail ? 'page-active' : 'page-enter']">
+        <template v-if="selectedItem">
+            <div class="sticky top-0 z-20 bg-white/80 backdrop-blur-md p-4 flex items-center gap-4 border-b border-slate-100">
+                <button @click="closeDetail" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-800 text-xl font-bold">←</button>
+                <h2 class="app-text-sm font-black uppercase tracking-tight truncate">{{ selectedItem.name }}</h2>
+            </div>
+
+            <div class="p-0">
+                <img :src="selectedItem.image" class="w-full h-72 object-cover">
+                <div class="p-6">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-red-50 text-red-600 app-text-xs font-black px-2.5 py-1 rounded-lg uppercase">{{ selectedItem.cat }}</span>
+                        <p class="text-lg font-black text-red-600">Rp{{ selectedItem.price }}</p>
+                    </div>
+                    <h1 class="text-xl font-black mt-3 text-slate-900 leading-tight">{{ selectedItem.name }}</h1>
+                    
+                    <div class="h-[1px] bg-slate-100 my-6"></div>
+                    
+                    <h4 class="app-text-xs font-black uppercase text-slate-400 tracking-widest mb-3">Informasi Produk</h4>
+                    <p class="app-text-sm text-slate-600 leading-relaxed font-medium">{{ selectedItem.desc }}</p>
+
+                    <div class="mt-10 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <p class="app-text-xs font-bold text-slate-400 mb-1">Status Pengiriman</p>
+                        <p class="app-text-sm font-black text-slate-800 uppercase italic">Instan via WhatsApp</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-slate-100 z-30">
+                <button @click="orderNow(selectedItem)" class="w-full bg-red-600 text-white py-4 rounded-2xl app-text-sm font-black uppercase tracking-widest shadow-lg shadow-red-100 active:scale-95 transition-all">
+                    Beli Sekarang
                 </button>
             </div>
-        </div>
+        </template>
     </div>
 </div>
 
@@ -88,25 +106,39 @@
         data() {
             return {
                 activeTab: 'Semua',
+                viewDetail: false,
                 selectedItem: null,
                 categories: ['Semua', 'Aplikasi', 'Akun', 'Premium', 'Jasa'],
                 products: [
-                    { id: 1, name: 'LF Stream Pro', price: '49.000', oldPrice: '99.000', image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500', cat: 'Aplikasi', isHot: true, desc: 'Akses ribuan video cinematic premium lewat cloud server.' },
-                    { id: 2, name: 'Netflix UHD 4K', price: '35.000', image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=500', cat: 'Akun', isHot: false, desc: 'Akun privat legal durasi 30 hari.' }
+                    { id: 1, name: 'LF Stream Pro', price: '49.000', image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500', cat: 'Aplikasi', desc: 'Layanan streaming premium dengan koleksi footage eksklusif untuk konten kreator level tinggi. Akses seumur hidup lewat LF Network cloud server.' },
+                    { id: 2, name: 'Netflix UHD 4K (Private)', price: '35.000', image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=500', cat: 'Akun', desc: 'Akun Netflix Private kualitas Ultra HD 4K. 1 Profile 1 User, tidak sharing. Legal 100% dan bergaransi penuh 30 hari.' }
                 ]
             }
         },
         computed: {
             filteredProducts() { return this.activeTab === 'Semua' ? this.products : this.products.filter(p => p.cat === this.activeTab) }
         },
-        mounted() { if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); } },
         methods: {
-            openDetail(item) { this.selectedItem = item; },
+            goToDetail(item) {
+                this.selectedItem = item;
+                this.viewDetail = true;
+                // Manipulasi history browser biar tombol BACK HP bisa kepake
+                history.pushState({page: 'detail'}, '');
+            },
+            closeDetail() {
+                this.viewDetail = false;
+                if(history.state) history.back();
+            },
             orderNow(item) {
-                const phone = "628123456789"; // GANTI NOMOR LU!
-                const text = encodeURIComponent(`Halo LF Store, saya mau beli *${item.name}* seharga *Rp${item.price}*`);
+                const phone = "628123456789"; 
+                const text = encodeURIComponent(`Halo LF Store, saya mau beli *${item.name}*`);
                 window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
             }
+        },
+        mounted() {
+            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+            // Deteksi tombol back fisik HP
+            window.onpopstate = () => { this.viewDetail = false; };
         }
     }).mount('#app')
 </script>
