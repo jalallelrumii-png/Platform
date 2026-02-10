@@ -6,36 +6,65 @@
     <title>LF ADMIN PANEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #f1f5f9; font-size: 12px; }
+        .input-box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; width: 100%; color: white; outline: none; font-size: 11px; }
+        .input-box:focus { border-color: #ef4444; }
+        .card { background: #1e293b; border-radius: 16px; padding: 12px; margin-bottom: 12px; border: 1px solid #334155; }
+        .btn-primary { background: #ef4444; color: white; padding: 10px; border-radius: 10px; font-weight: 800; text-transform: uppercase; font-size: 10px; width: 100%; }
+    </style>
 </head>
-<body class="bg-slate-900 text-white p-5">
-    <div id="app" class="max-w-xl mx-auto">
-        <header class="mb-10 flex justify-between items-center">
-            <h1 class="text-xl font-black italic">LF <span class="text-red-500">ADMIN</span></h1>
-            <button @click="saveToGithub" class="bg-green-600 px-4 py-2 rounded-xl text-xs font-bold uppercase shadow-lg shadow-green-900/20">Simpan Perubahan</button>
+<body class="p-4 pb-20">
+    <div id="app" class="max-w-md mx-auto">
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="font-black italic text-sm uppercase">LF <span class="text-red-500">CONTROL</span></h1>
+            <div class="flex gap-2">
+                <button @click="saveData" class="bg-green-600 text-[9px] px-3 py-1.5 rounded-lg font-bold uppercase">Simpan ke GitHub</button>
+            </div>
         </header>
 
-        <div class="mb-8 p-4 bg-slate-800 rounded-2xl border border-slate-700">
-            <p class="text-[10px] text-slate-400 uppercase font-black mb-2">GitHub Token & Repo</p>
-            <input v-model="config.token" type="password" placeholder="Paste GitHub Token Lu" class="w-full bg-slate-900 p-3 rounded-xl text-xs mb-2 outline-none border border-slate-700 focus:border-red-500">
-            <input v-model="config.repo" type="text" placeholder="username/repo (Contoh: jalallelrumii-png/Si-Pintar)" class="w-full bg-slate-900 p-3 rounded-xl text-xs outline-none border border-slate-700">
+        <div class="card bg-slate-800/50">
+            <p class="text-[9px] font-bold text-slate-500 mb-2 uppercase tracking-widest">Akses Database</p>
+            <input v-model="config.token" type="password" placeholder="GitHub Token (ghp_...)" class="input-box mb-2">
+            <input v-model="config.repo" type="text" placeholder="username/repo (Contoh: jalallelrumii-png/Platform)" class="input-box">
         </div>
 
-        <div class="space-y-4">
-            <div v-for="(p, index) in products" :key="index" class="p-5 bg-slate-800 rounded-[24px] border border-slate-700">
-                <div class="flex gap-4 mb-4">
-                    <img :src="p.image" class="w-16 h-16 rounded-xl object-cover bg-slate-900">
-                    <div class="flex-1">
-                        <input v-model="p.name" class="bg-transparent text-sm font-bold w-full outline-none focus:text-red-400">
-                        <input v-model="p.price" class="bg-transparent text-xs text-slate-400 w-full outline-none">
-                    </div>
-                    <button @click="remove(index)" class="text-red-500 font-bold">✕</button>
+        <div v-for="(p, index) in products" :key="index" class="card relative">
+            <button @click="remove(index)" class="absolute top-2 right-3 text-red-500 font-bold">✕</button>
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                    <label class="text-[8px] text-slate-500 uppercase font-bold">Nama Produk</label>
+                    <input v-model="p.name" class="input-box" placeholder="Contoh: Netflix 1 Bulan">
                 </div>
-                <textarea v-model="p.desc" class="w-full bg-slate-900 p-3 rounded-xl text-[11px] h-20 outline-none border border-slate-700"></textarea>
-                <input v-model="p.image" placeholder="URL Foto" class="w-full bg-slate-900 p-2 rounded-lg text-[9px] mt-2 border border-slate-700">
+                <div>
+                    <label class="text-[8px] text-slate-500 uppercase font-bold">Harga</label>
+                    <input v-model="p.price" class="input-box" placeholder="49.000">
+                </div>
             </div>
+            <div class="mb-2">
+                <label class="text-[8px] text-slate-500 uppercase font-bold">Link Foto (URL)</label>
+                <input v-model="p.image" class="input-box" placeholder="https://i.postimg.cc/xxx.jpg">
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                    <label class="text-[8px] text-slate-500 uppercase font-bold">Kategori</label>
+                    <select v-model="p.cat" class="input-box">
+                        <option>Aplikasi</option>
+                        <option>Akun</option>
+                        <option>Premium</option>
+                        <option>Jasa</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 mt-4">
+                    <input type="checkbox" v-model="p.isHot">
+                    <span class="text-[9px] font-bold uppercase">Label Hot?</span>
+                </div>
+            </div>
+            <label class="text-[8px] text-slate-500 uppercase font-bold">Deskripsi</label>
+            <textarea v-model="p.desc" class="input-box h-16" placeholder="Detail produk..."></textarea>
         </div>
 
-        <button @click="addNew" class="w-full mt-6 border-2 border-dashed border-slate-700 py-4 rounded-2xl text-slate-500 font-bold text-xs uppercase hover:border-red-500 hover:text-red-500">+ Tambah Produk Baru</button>
+        <button @click="addNew" class="w-full py-3 border-2 border-dashed border-slate-700 rounded-xl text-slate-500 font-bold text-[10px] uppercase">+ Tambah Barang Baru</button>
     </div>
 
     <script>
@@ -43,35 +72,32 @@
         createApp({
             data() {
                 return {
-                    config: { token: localStorage.getItem('lf-token') || '', repo: localStorage.getItem('lf-repo') || '' },
+                    config: { token: localStorage.getItem('lftoken') || '', repo: localStorage.getItem('lfrepo') || '' },
                     products: [],
-                    sha: '' // Dibutuhkan GitHub buat update file
+                    sha: ''
                 }
             },
             methods: {
                 async loadData() {
+                    if(!this.config.repo) return;
                     const res = await fetch(`https://api.github.com/repos/${this.config.repo}/contents/data.json`);
                     const data = await res.json();
                     this.sha = data.sha;
-                    this.products = JSON.parse(atob(data.content));
+                    this.products = JSON.parse(decodeURIComponent(escape(atob(data.content))));
                 },
-                addNew() {
-                    this.products.push({ id: Date.now(), name: "Nama Produk", price: "0", image: "", cat: "Aplikasi", desc: "" });
-                },
-                remove(i) { this.products.splice(i, 1); },
-                async saveToGithub() {
-                    localStorage.setItem('lf-token', this.config.token);
-                    localStorage.setItem('lf-repo', this.config.repo);
-                    
-                    const content = btoa(JSON.stringify(this.products, null, 2));
+                addNew() { this.products.push({ name: '', price: '', image: '', cat: 'Akun', desc: '', isHot: false }); },
+                remove(i) { if(confirm('Hapus barang ini?')) this.products.splice(i, 1); },
+                async saveData() {
+                    localStorage.setItem('lftoken', this.config.token);
+                    localStorage.setItem('lfrepo', this.config.repo);
+                    const content = btoa(unescape(encodeURIComponent(JSON.stringify(this.products, null, 2))));
                     const res = await fetch(`https://api.github.com/repos/${this.config.repo}/contents/data.json`, {
                         method: 'PUT',
                         headers: { 'Authorization': `token ${this.config.token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: "Update data jualan via LF Admin", content, sha: this.sha })
+                        body: JSON.stringify({ message: "Update via LF Admin", content, sha: this.sha })
                     });
-
-                    if(res.ok) { alert("Berhasil Update, Bos!"); location.reload(); }
-                    else { alert("Gagal! Cek Token atau Repo Lu!"); }
+                    if(res.ok) { alert("Data Berhasil Disimpan!"); location.reload(); }
+                    else { alert("Gagal Simpan! Pastikan Token benar & Repo: username/repo"); }
                 }
             },
             mounted() { if(this.config.repo) this.loadData(); }
